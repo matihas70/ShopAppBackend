@@ -10,10 +10,10 @@ using System.Security.Cryptography;
 
 namespace ShopApp.Services
 {
-    public class UserAccount : IUserAccount
+    public class Account : Interfaces.IAccount
     {
         private readonly IDbContextFactory<ShopContext> dbContextFactory;
-        public UserAccount(IDbContextFactory<ShopContext> _dbContextFactory)
+        public Account(IDbContextFactory<ShopContext> _dbContextFactory)
         {
             dbContextFactory = _dbContextFactory;
         }
@@ -45,19 +45,21 @@ namespace ShopApp.Services
             db.SaveChanges();
             return true;
         }
-        public bool Login(LoginDto loginDto)
+
+        
+        public Guid Login(LoginDto loginDto)
         {
             using ShopContext db = dbContextFactory.CreateDbContext();
-
+            
             User user = db.Users.FirstOrDefault(u => u.Email == loginDto.Email);
             if (user == null)
-                return false;
+                return Guid.Empty;
 
             byte[] bytes = Encoding.UTF8.GetBytes(user.Salt + loginDto.Password + Consts.Security.pepper);
             byte[] hashedPassword = SHA256.HashData(bytes);
 
             if(!(user.Password == Encoding.ASCII.GetString(hashedPassword)))
-                return false;
+                return Guid.Empty;
 
             Session session = new Session()
             {
@@ -66,15 +68,11 @@ namespace ShopApp.Services
                 CreationDate = DateTime.Now,
                 ExpirationDate = DateTime.Now.AddMonths(3)
             };
+            
             db.Add(session);
             db.SaveChanges();
 
-            return true;
-        }
-
-        private void CreateHash(string password, User user)
-        {
-            
+            return session.Id;
         }
 
         private string GenRandomSalt(int lettersCount)

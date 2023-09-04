@@ -2,14 +2,15 @@
 using ShopApp.Interfaces;
 using ShopApp.Models;
 using ShopApp.Services;
+using System.Net;
 
 namespace ShopApp.Controllers
 {
     [Controller]
     public class AccountController : Controller
     {
-        private readonly IUserAccount userAccount;
-        public AccountController(IUserAccount _userAccount)
+        private readonly IAccount userAccount;
+        public AccountController(IAccount _userAccount)
         {
             userAccount = _userAccount;
         }
@@ -19,12 +20,17 @@ namespace ShopApp.Controllers
         }
 
         [HttpPost]
+        //[Route("login")]
         public IActionResult Login([FromBody]LoginDto loginDto)
         {
-            if(userAccount.Login(loginDto))
-                return Ok("Logowanie udane");
-
-            return BadRequest("Logowanie nieudane");
+            Guid guid = userAccount.Login(loginDto);
+            if (guid == Guid.Empty)
+                return BadRequest("Logowanie nieudane");
+            
+            Response.Cookies.Append("Id", guid.ToString(), new CookieOptions() {Secure = false, HttpOnly = false});
+            Response.Headers.Add("myheader", "myValue");
+            return Ok();
+            
         }
 
         [HttpPost]
@@ -36,6 +42,12 @@ namespace ShopApp.Controllers
             }
             
             return BadRequest();
+        }
+
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete("Id");
+            return Ok();
         }
     }
 }

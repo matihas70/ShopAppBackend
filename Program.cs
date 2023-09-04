@@ -15,7 +15,22 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContextFactory<ShopContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ShopDB")));
 
-builder.Services.AddScoped<IUserAccount, UserAccount>();
+builder.Services.AddScoped<IAccount, Account>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "AngularOrigin",
+    policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials()
+        .WithExposedHeaders("Myheader");
+    });
+});
+    
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -25,6 +40,7 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+app.UseCors("AngularOrigin");
 
 app.UseHttpsRedirection();
 
@@ -32,23 +48,20 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-app.UseMiddleware<CheckSessionMiddleware>();
+app.MapWhen(
+    httpcontext => !httpcontext.Request.Path.StartsWithSegments("/Account"),
+    subApp => subApp.UseMiddleware<CheckSessionMiddleware>()
+    );
 
-app.MapControllerRoute(
-    name: "register",
-    pattern: "{controller=Account}/{action=Register}");
+//app.UseMiddleware<CheckSessionMiddleware>();
 
-app.MapControllerRoute(
-    name: "login",
-    pattern: "{controller=Account}/{action=Login}");
+//app.MapControllerRoute(
+//    name: "register",
+//    pattern: "{controller=Account}/{action=Register}");
+
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
-//app.UseEndpoints(endpoints =>
-//{
-//    endpoints.MapFallbackToController("Index", "Home");
-//});
 
 app.Run();
