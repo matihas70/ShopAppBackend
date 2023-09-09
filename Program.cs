@@ -48,9 +48,14 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapWhen(
-    httpcontext => !httpcontext.Request.Path.StartsWithSegments("/Account"),
-    subApp => subApp.UseMiddleware<CheckSessionMiddleware>()
+app.UseWhen(
+    httpContext => !httpContext.Request.Path.StartsWithSegments("/Account"),
+    subApp => subApp.UseMiddleware<CheckSessionHomeMiddleware>()
+    );
+
+app.UseWhen(
+    httpContext => httpContext.Request.Path.StartsWithSegments("/Account"),
+    subApp => subApp.UseMiddleware<CheckSessionLoginMiddleware>()
     );
 
 //app.UseMiddleware<CheckSessionMiddleware>();
