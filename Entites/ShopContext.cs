@@ -53,6 +53,10 @@ namespace ShopApp.Entites
                 .HasForeignKey(x => x.SuperCategoryId)
                 .OnDelete(DeleteBehavior.NoAction);
 
+            modelBuilder.Entity<Category>()
+                .Property(x => x.SuperCategoryId)
+                .IsRequired(false);
+
             modelBuilder.Entity<Session>()
                 .HasOne(x => x.User)
                 .WithMany(x => x.Sessions)

@@ -2,7 +2,7 @@
 
 namespace ShopApp.Interfaces
 {
-    public interface IAccount
+    public interface IAccountService
     {
         bool Register(RegisterDto registerDto);
         Guid Login(LoginDto loginDto);

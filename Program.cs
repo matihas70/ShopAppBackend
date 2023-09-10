@@ -15,7 +15,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContextFactory<ShopContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ShopDB")));
 
-builder.Services.AddScoped<IAccount, Account>();
+builder.Services.AddScoped<IAccountService, AccountService>();
 
 builder.Services.AddCors(options =>
 {
@@ -49,7 +49,7 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.UseWhen(
-    httpContext => !httpContext.Request.Path.StartsWithSegments("/Account"),
+    httpContext => httpContext.Request.Path.StartsWithSegments("/Cart"),
     subApp => subApp.UseMiddleware<CheckSessionHomeMiddleware>()
     );
 

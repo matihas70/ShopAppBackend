@@ -9,8 +9,8 @@ namespace ShopApp.Controllers
     [Controller]
     public class AccountController : Controller
     {
-        private readonly IAccount userAccount;
-        public AccountController(IAccount _userAccount)
+        private readonly IAccountService userAccount;
+        public AccountController(IAccountService _userAccount)
         {
             userAccount = _userAccount;
         }

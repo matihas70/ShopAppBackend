@@ -10,10 +10,10 @@ using System.Security.Cryptography;
 
 namespace ShopApp.Services
 {
-    public class Account : Interfaces.IAccount
+    public class AccountService : Interfaces.IAccountService
     {
         private readonly IDbContextFactory<ShopContext> dbContextFactory;
-        public Account(IDbContextFactory<ShopContext> _dbContextFactory)
+        public AccountService(IDbContextFactory<ShopContext> _dbContextFactory)
         {
             dbContextFactory = _dbContextFactory;
         }
