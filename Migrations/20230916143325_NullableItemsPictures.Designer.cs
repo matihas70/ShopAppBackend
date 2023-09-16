@@ -12,8 +12,8 @@ using ShopApp.Entites;
 namespace ShopApp.Migrations
 {
     [DbContext(typeof(ShopContext))]
-    [Migration("20230809174556_AddSessions")]
-    partial class AddSessions
+    [Migration("20230916143325_NullableItemsPictures")]
+    partial class NullableItemsPictures
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -111,7 +111,9 @@ namespace ShopApp.Migrations
 
                     b.Property<string>("Items")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("[]");
 
                     b.HasKey("Id");
 
@@ -130,7 +132,7 @@ namespace ShopApp.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(200)");
 
-                    b.Property<int>("SuperCategoryId")
+                    b.Property<int?>("SuperCategoryId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -151,14 +153,17 @@ namespace ShopApp.Migrations
                     b.Property<int>("BrandId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<byte>("Gender")
+                        .HasColumnType("tinyint");
+
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Pictures")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Price")
@@ -169,9 +174,44 @@ namespace ShopApp.Migrations
 
                     b.HasIndex("BrandId");
 
-                    b.HasIndex("CategoryId");
-
                     b.ToTable("Items");
+                });
+
+            modelBuilder.Entity("ShopApp.Entites.ItemCategory", b =>
+                {
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.HasKey("CategoryId", "ItemId");
+
+                    b.HasIndex("ItemId");
+
+                    b.ToTable("ItemsCategories");
+                });
+
+            modelBuilder.Entity("ShopApp.Entites.Session", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpirationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Sessions");
                 });
 
             modelBuilder.Entity("ShopApp.Entites.User", b =>
@@ -197,6 +237,10 @@ namespace ShopApp.Migrations
                         .HasColumnType("varchar(200)");
 
                     b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Salt")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -236,8 +280,7 @@ namespace ShopApp.Migrations
                     b.HasOne("ShopApp.Entites.Category", "SuperCategory")
                         .WithMany("SubCategories")
                         .HasForeignKey("SuperCategoryId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("SuperCategory");
                 });
@@ -250,15 +293,33 @@ namespace ShopApp.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ShopApp.Entites.Category", "Category")
-                        .WithMany("Items")
+                    b.Navigation("Brand");
+                });
+
+            modelBuilder.Entity("ShopApp.Entites.ItemCategory", b =>
+                {
+                    b.HasOne("ShopApp.Entites.Category", null)
+                        .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Brand");
+                    b.HasOne("ShopApp.Entites.Item", null)
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
 
-                    b.Navigation("Category");
+            modelBuilder.Entity("ShopApp.Entites.Session", b =>
+                {
+                    b.HasOne("ShopApp.Entites.User", "User")
+                        .WithMany("Sessions")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ShopApp.Entites.User", b =>
@@ -290,14 +351,14 @@ namespace ShopApp.Migrations
 
             modelBuilder.Entity("ShopApp.Entites.Category", b =>
                 {
-                    b.Navigation("Items");
-
                     b.Navigation("SubCategories");
                 });
 
             modelBuilder.Entity("ShopApp.Entites.User", b =>
                 {
                     b.Navigation("Addresses");
+
+                    b.Navigation("Sessions");
                 });
 #pragma warning restore 612, 618
         }

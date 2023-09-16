@@ -12,8 +12,8 @@ using ShopApp.Entites;
 namespace ShopApp.Migrations
 {
     [DbContext(typeof(ShopContext))]
-    [Migration("20230910110435_SuperCategoryAsNullable")]
-    partial class SuperCategoryAsNullable
+    [Migration("20230913184350_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -153,13 +153,17 @@ namespace ShopApp.Migrations
                     b.Property<int>("BrandId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<byte>("Gender")
+                        .HasColumnType("tinyint");
+
                     b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Pictures")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -171,9 +175,22 @@ namespace ShopApp.Migrations
 
                     b.HasIndex("BrandId");
 
-                    b.HasIndex("CategoryId");
-
                     b.ToTable("Items");
+                });
+
+            modelBuilder.Entity("ShopApp.Entites.ItemCategory", b =>
+                {
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.HasKey("CategoryId", "ItemId");
+
+                    b.HasIndex("ItemId");
+
+                    b.ToTable("ItemsCategories");
                 });
 
             modelBuilder.Entity("ShopApp.Entites.Session", b =>
@@ -277,15 +294,22 @@ namespace ShopApp.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ShopApp.Entites.Category", "Category")
-                        .WithMany("Items")
+                    b.Navigation("Brand");
+                });
+
+            modelBuilder.Entity("ShopApp.Entites.ItemCategory", b =>
+                {
+                    b.HasOne("ShopApp.Entites.Category", null)
+                        .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Brand");
-
-                    b.Navigation("Category");
+                    b.HasOne("ShopApp.Entites.Item", null)
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ShopApp.Entites.Session", b =>
@@ -328,8 +352,6 @@ namespace ShopApp.Migrations
 
             modelBuilder.Entity("ShopApp.Entites.Category", b =>
                 {
-                    b.Navigation("Items");
-
                     b.Navigation("SubCategories");
                 });
 

@@ -21,7 +21,7 @@ namespace ShopApp.Middlewares
             {
                 await next.Invoke(context);
             }
-                
+
 
         }
         protected abstract Task<bool> checkSession(HttpContext context);

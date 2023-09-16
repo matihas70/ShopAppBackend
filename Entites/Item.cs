@@ -13,8 +13,8 @@ namespace ShopApp.Entites
         public string? Description { get; set; }
         public virtual Brand Brand { get; set; }
         public int BrandId { get; set; }
-        public virtual Category Category { get; set; }
-        public int CategoryId { get; set; }
-
+        public virtual ICollection<Category> Categories { get; set; }
+        public byte Gender { get; set; }
+        public string? Pictures { get; set; }
     }
 }

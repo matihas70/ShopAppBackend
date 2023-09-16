@@ -15,6 +15,7 @@ namespace ShopApp.Entites
         public DbSet<AddressType> AddressTypes { get; set; }
         public DbSet<Item> Items { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<ItemCategory> ItemsCategories { get; set; }
         public DbSet<Brand> Brands { get; set; }
         public DbSet<Cart> Carts { get; set; }
         public DbSet<Session> Sessions { get; set; }
@@ -38,9 +39,9 @@ namespace ShopApp.Entites
                 .HasForeignKey(x => x.TypeId);
 
             modelBuilder.Entity<Item>()
-                .HasOne(x => x.Category)
+                .HasMany(x => x.Categories)
                 .WithMany(x => x.Items)
-                .HasForeignKey(x => x.CategoryId);
+                .UsingEntity<ItemCategory>();
 
             modelBuilder.Entity<Item>()
                 .HasOne(x => x.Brand)

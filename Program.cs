@@ -6,6 +6,8 @@ using ShopApp.Interfaces;
 using ShopApp.Middlewares;
 using ShopApp.Services;
 using Microsoft.AspNetCore.StaticFiles;
+using Azure;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
@@ -16,6 +18,7 @@ builder.Services.AddDbContextFactory<ShopContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ShopDB")));
 
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IItemService, ItemService>();
 
 builder.Services.AddCors(options =>
 {
@@ -47,6 +50,11 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseAuthorization();
+
+app.MapWhen(
+    httpContext => httpContext.Request.Path.StartsWithSegments("/"),
+    subApp => subApp.UseMiddleware<ToHomeMiddleware>()
+    );
 
 app.UseWhen(
     httpContext => httpContext.Request.Path.StartsWithSegments("/Cart"),

@@ -4,6 +4,7 @@ namespace ShopApp.Interfaces
 {
     public interface IItemService
     {
-        List<GetCategoryDto> GetCategories();
+        List<OutputCategoryDto> GetCategories();
+        List<OutputItemDto> GetItems(InputItemsDto dto);
     }
 }

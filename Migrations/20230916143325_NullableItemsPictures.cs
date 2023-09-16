@@ -5,22 +5,14 @@
 namespace ShopApp.Migrations
 {
     /// <inheritdoc />
-    public partial class AddNullableFields : Migration
+    public partial class NullableItemsPictures : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
-                name: "Description",
+                name: "Pictures",
                 table: "Items",
-                type: "nvarchar(max)",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(max)");
-
-            migrationBuilder.AlterColumn<string>(
-                name: "Description",
-                table: "Brands",
                 type: "nvarchar(max)",
                 nullable: true,
                 oldClrType: typeof(string),
@@ -31,18 +23,8 @@ namespace ShopApp.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
-                name: "Description",
+                name: "Pictures",
                 table: "Items",
-                type: "nvarchar(max)",
-                nullable: false,
-                defaultValue: "",
-                oldClrType: typeof(string),
-                oldType: "nvarchar(max)",
-                oldNullable: true);
-
-            migrationBuilder.AlterColumn<string>(
-                name: "Description",
-                table: "Brands",
                 type: "nvarchar(max)",
                 nullable: false,
                 defaultValue: "",
