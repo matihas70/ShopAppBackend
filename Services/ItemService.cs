@@ -1,9 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ShopApp.Entites;
+using ShopApp.Enums;
 using ShopApp.Interfaces;
 using ShopApp.Models;
+using ShopApp.Models.Requests;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq.Expressions;
+using System.Text.Json;
 
 namespace ShopApp.Services
 {
@@ -15,7 +19,7 @@ namespace ShopApp.Services
             dbFactory = _dbFactory;
         }
 
-        public List<OutputItemDto> GetItems(InputItemsDto dto)
+        public List<OutputGetItemDto> GetItems(InputGetItemsDto dto)
         {
             using ShopContext db = dbFactory.CreateDbContext();
 
@@ -25,7 +29,7 @@ namespace ShopApp.Services
             List<Category> categories = query.ToList();
 
             List<int> categoriesId = GetCategoriesId(categories);
-            
+
             var res = db.Items.Include(i => i.Categories)
                 .Where(i => i.Gender == dto.Gender && i.Categories.Any(y => categoriesId.Contains(y.Id)))
                 .Select(x => new
@@ -39,7 +43,7 @@ namespace ShopApp.Services
                 }).AsEnumerable()
             .Select(x =>
             {
-                return new OutputItemDto()
+                return new OutputGetItemDto()
                 {
                     Id = x.Id,
                     Name = x.Name,
@@ -77,7 +81,7 @@ namespace ShopApp.Services
             return result;
         }
 
-        public List<OutputCategoryDto> GetCategories()
+        public List<OutputGetCategoryDto> GetCategories()
         {
             using ShopContext db = dbFactory.CreateDbContext();
 
@@ -87,15 +91,15 @@ namespace ShopApp.Services
             var test = categoriesToDtoModel(mainCategories);
             return categoriesToDtoModel(mainCategories);
         }
-        private List<OutputCategoryDto> categoriesToDtoModel(List<Category> categories)
+        private List<OutputGetCategoryDto> categoriesToDtoModel(List<Category> categories)
         {
             if (categories == null)
                 return null;
 
-            List<OutputCategoryDto> dtoList = new List<OutputCategoryDto>();
+            List<OutputGetCategoryDto> dtoList = new List<OutputGetCategoryDto>();
             foreach (Category category in categories)
             {
-                OutputCategoryDto dto = new OutputCategoryDto()
+                OutputGetCategoryDto dto = new OutputGetCategoryDto()
                 {
                     Id = category.Id,
                     Name = category.Name,
@@ -106,6 +110,65 @@ namespace ShopApp.Services
             return dtoList;
         }
 
+        public bool AddItem(AddItemDto dto)
+        {
+            using ShopContext db = dbFactory.CreateDbContext();
+            // List<Category> categories = dto.CategoriesId.Select(c => new Category() { Id = c }).ToList();
+            if (db.Items.FirstOrDefault(i => i.Name == dto.Name) != null)
+                return false;
 
+            
+            Item newItem = new Item()
+            {
+                Name = dto.Name,
+                Description = dto.Description,
+                BrandId = dto.BrandId,
+                Gender = dto.Gender,
+                Sizes = JsonSerializer.Serialize(dto.Sizes)
+            };
+
+            List<ItemStock> itemsStock = new List<ItemStock>();
+
+            List<SizeModel> sizesModel = new List<SizeModel>();
+            foreach (string clothSize in dto.Sizes)
+            {
+                sizesModel.Add(new SizeModel() { size = clothSize });
+            }
+
+            foreach (ItemVariantDto itemVariant in dto.Variants)
+            {
+                foreach (SizeModel s in sizesModel)
+                    s.count = 0;
+
+                foreach(SizeModel sizeModel in itemVariant.Stock)
+                {
+                    sizesModel.FirstOrDefault(s => s.size == sizeModel.size).count = sizeModel.count;
+                }
+
+                string stockJson = JsonSerializer.Serialize(sizesModel);
+
+                ItemStock item = new ItemStock()
+                {
+                    Item = newItem,
+                    Price = itemVariant.Price,
+                    Discount = itemVariant.Discount,
+                    Color = itemVariant.Color,
+                    Stock = stockJson
+                };
+                itemsStock.Add(item);
+            }
+            
+            List<ItemCategory> itemCategory = dto.CategoriesId.Select(ic => new ItemCategory()
+            {
+                Item = newItem,
+                CategoryId = ic
+            }).ToList();
+
+            db.Items.Add(newItem);
+            db.ItemsStock.AddRange(itemsStock);
+            db.ItemsCategories.AddRange(itemCategory);
+            db.SaveChanges();
+            return true;
+        }
     }
 }

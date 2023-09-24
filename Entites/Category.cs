@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ShopApp.Entites
 {
-    public class Category
+    public partial class Category
     {
         public int Id { get; set; }
         [Column(TypeName = "varchar(200)")]

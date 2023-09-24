@@ -17,7 +17,7 @@ namespace ShopApp.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.9")
+                .HasAnnotation("ProductVersion", "7.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -108,9 +108,7 @@ namespace ShopApp.Migrations
 
                     b.Property<string>("Items")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("[]");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -147,6 +145,9 @@ namespace ShopApp.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("AddDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("BrandId")
                         .HasColumnType("int");
 
@@ -163,9 +164,8 @@ namespace ShopApp.Migrations
                     b.Property<string>("Pictures")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("Price")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<string>("Sizes")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -176,17 +176,54 @@ namespace ShopApp.Migrations
 
             modelBuilder.Entity("ShopApp.Entites.ItemCategory", b =>
                 {
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
+
+                    b.HasKey("ItemId", "CategoryId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("ItemsCategories");
+                });
+
+            modelBuilder.Entity("ShopApp.Entites.ItemStock", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AddDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Discount")
+                        .HasColumnType("int")
+                        .HasColumnName("Discount[%]");
 
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
-                    b.HasKey("CategoryId", "ItemId");
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Stock")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("ItemId");
 
-                    b.ToTable("ItemsCategories");
+                    b.ToTable("ItemsStock");
                 });
 
             modelBuilder.Entity("ShopApp.Entites.Session", b =>
@@ -295,17 +332,32 @@ namespace ShopApp.Migrations
 
             modelBuilder.Entity("ShopApp.Entites.ItemCategory", b =>
                 {
-                    b.HasOne("ShopApp.Entites.Category", null)
+                    b.HasOne("ShopApp.Entites.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ShopApp.Entites.Item", null)
+                    b.HasOne("ShopApp.Entites.Item", "Item")
                         .WithMany()
                         .HasForeignKey("ItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Item");
+                });
+
+            modelBuilder.Entity("ShopApp.Entites.ItemStock", b =>
+                {
+                    b.HasOne("ShopApp.Entites.Item", "Item")
+                        .WithMany("ItemsStock")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
                 });
 
             modelBuilder.Entity("ShopApp.Entites.Session", b =>
@@ -349,6 +401,11 @@ namespace ShopApp.Migrations
             modelBuilder.Entity("ShopApp.Entites.Category", b =>
                 {
                     b.Navigation("SubCategories");
+                });
+
+            modelBuilder.Entity("ShopApp.Entites.Item", b =>
+                {
+                    b.Navigation("ItemsStock");
                 });
 
             modelBuilder.Entity("ShopApp.Entites.User", b =>

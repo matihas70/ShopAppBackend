@@ -19,6 +19,7 @@ builder.Services.AddDbContextFactory<ShopContext>(options =>
 
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IItemService, ItemService>();
+builder.Services.AddScoped<ICartService, CartService>();
 
 builder.Services.AddCors(options =>
 {
@@ -50,6 +51,8 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseAuthorization();
+
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.MapWhen(
     httpContext => httpContext.Request.Path.StartsWithSegments("/"),

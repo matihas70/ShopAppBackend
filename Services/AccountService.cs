@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 using System.Security.Cryptography;
+using ShopApp.Exceptions;
 
 namespace ShopApp.Services
 {
@@ -29,13 +30,15 @@ namespace ShopApp.Services
             byte[] bytes = Encoding.UTF8.GetBytes(salt + registerDto.Password + Consts.Security.pepper);
             byte[] hashedPassword = SHA256.HashData(bytes);
 
-            User user = new User();
-            user.Salt = salt;
-            user.Password = Encoding.ASCII.GetString(hashedPassword);
-            user.Email = registerDto.Email;
-            user.CreationDate = DateTime.Now;
-            user.Name = registerDto.Name;
-            user.Surname = registerDto.Surname;
+            User user = new User()
+            {
+                Salt = salt,
+                Password = Encoding.ASCII.GetString(hashedPassword),
+                Email = registerDto.Email,
+                CreationDate = DateTime.Now,
+                Name = registerDto.Name,
+                Surname = registerDto.Surname
+            };
             
             Cart cart = new Cart();
             cart.User = user;
@@ -53,13 +56,13 @@ namespace ShopApp.Services
             
             User user = db.Users.FirstOrDefault(u => u.Email == loginDto.Email);
             if (user == null)
-                return Guid.Empty;
+                throw new UserNotFoundException();
 
             byte[] bytes = Encoding.UTF8.GetBytes(user.Salt + loginDto.Password + Consts.Security.pepper);
             byte[] hashedPassword = SHA256.HashData(bytes);
 
-            if(!(user.Password == Encoding.ASCII.GetString(hashedPassword)))
-                return Guid.Empty;
+            if (!(user.Password == Encoding.ASCII.GetString(hashedPassword)))
+                throw new WrongPasswordException();
 
             Session session = new Session()
             {

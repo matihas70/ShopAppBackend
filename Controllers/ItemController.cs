@@ -20,12 +20,12 @@ namespace ShopApp.Controllers
         [Route("GetItems")]
         public IActionResult Items([FromQuery]GenderEnum gender, [FromQuery]List<int> categoriesId)
         {
-            InputItemsDto dto = new InputItemsDto()
+            InputGetItemsDto dto = new InputGetItemsDto()
             {
                 Gender = (byte)gender,
                 CategoriesId = categoriesId,
             };
-            List<OutputItemDto> items = itemService.GetItems(dto);
+            List<OutputGetItemDto> items = itemService.GetItems(dto);
             return Ok(items);
         }
 
@@ -34,6 +34,16 @@ namespace ShopApp.Controllers
         public IActionResult Categories()
         {
             return Ok(itemService.GetCategories());
+        }
+        [HttpPost]
+        [Route("AddItem")]
+        public IActionResult AddItem([FromBody] AddItemDto dto)
+        {
+            if (itemService.AddItem(dto))
+            {
+                return Ok("Item added");
+            }
+            return BadRequest();
         }
 
 

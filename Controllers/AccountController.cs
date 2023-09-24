@@ -14,22 +14,15 @@ namespace ShopApp.Controllers
         {
             userAccount = _userAccount;
         }
-        public IActionResult Index()
-        {
-            return View();
-        }
 
         [HttpPost]
         //[Route("login")]
         public IActionResult Login([FromBody]LoginDto loginDto)
         {
             Guid guid = userAccount.Login(loginDto);
-            if (guid == Guid.Empty)
-                return BadRequest("Logowanie nieudane");
             
-            Response.Cookies.Append("Id", guid.ToString(), new CookieOptions() {Secure = false, HttpOnly = false});
-            Response.Headers.Add("myheader", "myValue");
-            return Ok();
+            Response.Cookies.Append("Id", guid.ToString(), new CookieOptions() {Secure = false, HttpOnly = true});
+            return Ok("Successfull login");
             
         }
 
@@ -38,7 +31,7 @@ namespace ShopApp.Controllers
         {
             if (userAccount.Register(registerDto))
             {  
-                return Ok("Rejestracja udana");
+                return Ok("Successful register");
             }
             
             return BadRequest();

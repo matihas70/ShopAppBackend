@@ -44,7 +44,7 @@ namespace ShopApp.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Items = table.Column<string>(type: "nvarchar(max)", nullable: false, defaultValue: "[]")
+                    Items = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -77,11 +77,12 @@ namespace ShopApp.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     BrandId = table.Column<int>(type: "int", nullable: false),
                     Gender = table.Column<byte>(type: "tinyint", nullable: false),
-                    Pictures = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Sizes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AddDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Pictures = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -128,7 +129,7 @@ namespace ShopApp.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ItemsCategories", x => new { x.CategoryId, x.ItemId });
+                    table.PrimaryKey("PK_ItemsCategories", x => new { x.ItemId, x.CategoryId });
                     table.ForeignKey(
                         name: "FK_ItemsCategories_Categories_CategoryId",
                         column: x => x.CategoryId,
@@ -137,6 +138,30 @@ namespace ShopApp.Migrations
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ItemsCategories_Items_ItemId",
+                        column: x => x.ItemId,
+                        principalTable: "Items",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ItemsStock",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ItemId = table.Column<int>(type: "int", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Discount = table.Column<int>(name: "Discount[%]", type: "int", nullable: false),
+                    Color = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Stock = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AddDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ItemsStock", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ItemsStock_Items_ItemId",
                         column: x => x.ItemId,
                         principalTable: "Items",
                         principalColumn: "Id",
@@ -214,8 +239,13 @@ namespace ShopApp.Migrations
                 column: "BrandId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ItemsCategories_ItemId",
+                name: "IX_ItemsCategories_CategoryId",
                 table: "ItemsCategories",
+                column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ItemsStock_ItemId",
+                table: "ItemsStock",
                 column: "ItemId");
 
             migrationBuilder.CreateIndex(
@@ -238,6 +268,9 @@ namespace ShopApp.Migrations
 
             migrationBuilder.DropTable(
                 name: "ItemsCategories");
+
+            migrationBuilder.DropTable(
+                name: "ItemsStock");
 
             migrationBuilder.DropTable(
                 name: "Sessions");
