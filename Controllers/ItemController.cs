@@ -7,17 +7,16 @@ namespace ShopApp.Controllers
 {
     [ApiController]
     [Route("Items")]
-    public class ItemController : Controller
+    public class ItemsController : Controller
     {
         private readonly IItemService itemService;
 
-        public ItemController(IItemService _itemService)
+        public ItemsController(IItemService _itemService)
         {
             itemService = _itemService;
         }
 
         [HttpGet]
-        [Route("GetItems")]
         public IActionResult Items([FromQuery]GenderEnum gender, [FromQuery]List<int> categoriesId)
         {
             InputGetItemsDto dto = new InputGetItemsDto()
