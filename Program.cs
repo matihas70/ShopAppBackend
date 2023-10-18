@@ -76,8 +76,6 @@ app.UseWhen(
 //    pattern: "{controller=Account}/{action=Register}");
 
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapControllers();
 
 app.Run();

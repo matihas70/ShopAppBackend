@@ -22,39 +22,57 @@ namespace ShopApp.Services
         public List<OutputGetItemDto> GetItems(InputGetItemsDto dto)
         {
             using ShopContext db = dbFactory.CreateDbContext();
-
-            IQueryable<Category> query = db.Categories.Where(c => dto.CategoriesId.Any(x => x == c.Id))
-                    .Select(GetSubCategories(4));
-
+            IQueryable<Category> query = Enumerable.Empty<Category>().AsQueryable();
+            if (dto.CategoriesId.Count != 0)
+            {
+                query = db.Categories.Where(c => dto.CategoriesId.Any(x => x == c.Id))
+                    .Select(GetSubCategories(5));
+            }
             List<Category> categories = query.ToList();
 
             List<int> categoriesId = GetCategoriesId(categories);
 
-            var res = db.Items.Include(i => i.Categories)
-                .Where(i => i.Gender == dto.Gender && i.Categories.Any(y => categoriesId.Contains(y.Id)))
-                .Select(x => new
+            var res = db.Items
+                .GroupJoin(db.ItemsCategories, i => i.Id, ic => ic.ItemId, (i, ic) => new { i, ic })
+                .Select(y => new
                 {
-                    x.Id,
-                    x.Name,
-                    x.Description,
-                    Categories = x.Categories == null ? null : x.Categories.Select(y => y.Id),
-                    x.BrandId,
-                    x.Gender
-                }).AsEnumerable()
-            .Select(x =>
-            {
-                return new OutputGetItemDto()
-                {
-                    Id = x.Id,
-                    Name = x.Name,
-                    Description = x.Description,
-                    CategoriesId = x.Categories.ToList(),
-                    BrandId = x.BrandId,
-                    Gender = x.Gender
-                };
+                    Id = y.i.Id,
+                    Name = y.i.Name,
+                    Description = y.i.Description,
+                    CategoriesId = y.ic.Join(db.Categories, x => x.ItemId, c => c.Id, (x, c) => new { x, c })
+                                       .Select(z => z.c.Id),
+                    BrandId = y.i.BrandId,
+                    Gender = y.i.Gender,
 
+                });
+
+            if(dto.Gender != null)
+            {
+                if(dto.Gender == GenderEnum.Kids)
+                {
+                    res = res.Where(i => i.Gender == (byte)dto.Gender);
+                }
+                else
+                {
+                    res = res.Where(i => i.Gender == (byte)dto.Gender || i.Gender == (byte)GenderEnum.Unisex);
+                }
+            }
+
+            if (dto.CategoriesId.Count != 0)
+            {
+                res = res.Where(i => i.CategoriesId.Any(y => categoriesId.Contains(y)));
+            }
+            
+            return res.Select(x => new OutputGetItemDto
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Description = x.Description,
+                CategoriesId = x.CategoriesId.ToList(),
+                BrandId = x.BrandId,
+                Gender = x.Gender
             }).ToList();
-            return res;
+              
         }
         private List<int> GetCategoriesId(List<Category> categories)
         {
@@ -117,7 +135,7 @@ namespace ShopApp.Services
             if (db.Items.FirstOrDefault(i => i.Name == dto.Name) != null)
                 return false;
 
-            
+
             Item newItem = new Item()
             {
                 Name = dto.Name,
@@ -140,7 +158,7 @@ namespace ShopApp.Services
                 foreach (SizeModel s in sizesModel)
                     s.count = 0;
 
-                foreach(SizeModel sizeModel in itemVariant.Stock)
+                foreach (SizeModel sizeModel in itemVariant.Stock)
                 {
                     sizesModel.FirstOrDefault(s => s.size == sizeModel.size).count = sizeModel.count;
                 }
@@ -157,7 +175,7 @@ namespace ShopApp.Services
                 };
                 itemsStock.Add(item);
             }
-            
+
             List<ItemCategory> itemCategory = dto.CategoriesId.Select(ic => new ItemCategory()
             {
                 Item = newItem,

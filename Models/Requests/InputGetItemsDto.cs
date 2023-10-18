@@ -1,8 +1,10 @@
-﻿namespace ShopApp.Models
+﻿using ShopApp.Enums;
+
+namespace ShopApp.Models
 {
     public class InputGetItemsDto
     {   
-        public byte Gender { get; set; }
+        public GenderEnum? Gender { get; set; }
         public List<int> CategoriesId { get; set; }
     }
 }

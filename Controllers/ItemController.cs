@@ -5,8 +5,8 @@ using ShopApp.Models;
 
 namespace ShopApp.Controllers
 {
-    [ApiController]
     [Route("Items")]
+    [ApiController]
     public class ItemsController : Controller
     {
         private readonly IItemService itemService;
@@ -16,12 +16,12 @@ namespace ShopApp.Controllers
             itemService = _itemService;
         }
 
-        [HttpGet]
-        public IActionResult Items([FromQuery]GenderEnum gender, [FromQuery]List<int> categoriesId)
+        [HttpGet("{catType?}")]
+        public IActionResult getItems([FromRoute]string? catType, [FromQuery(Name = "gender")] int gender, [FromQuery] List<int> categoriesId)
         {
             InputGetItemsDto dto = new InputGetItemsDto()
             {
-                Gender = (byte)gender,
+                Gender = (GenderEnum)gender,
                 CategoriesId = categoriesId,
             };
             List<OutputGetItemDto> items = itemService.GetItems(dto);
