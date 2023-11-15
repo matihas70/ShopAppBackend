@@ -109,7 +109,7 @@ namespace ShopApp.Services
             var test = categoriesToDtoModel(mainCategories);
             return categoriesToDtoModel(mainCategories);
         }
-        private List<OutputGetCategoryDto> categoriesToDtoModel(List<Category> categories)
+        private List<OutputGetCategoryDto> categoriesToDtoModel(List<Category> categories, int ParentCategoryId = 0)
         {
             if (categories == null)
                 return null;
@@ -121,7 +121,8 @@ namespace ShopApp.Services
                 {
                     Id = category.Id,
                     Name = category.Name,
-                    SubCategories = category.SubCategories == null ? null : categoriesToDtoModel(category.SubCategories.ToList())
+                    SubCategories = category.SubCategories == null ? null : categoriesToDtoModel(category.SubCategories.ToList(), category.Id),
+                    ParentCategoryId = ParentCategoryId
                 };
                 dtoList.Add(dto);
             }
